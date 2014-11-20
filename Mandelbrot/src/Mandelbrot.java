@@ -1,5 +1,3 @@
-import java.awt.Color;
-
 import se.lth.cs.ptdc.fractal.MandelbrotGUI;
 
 
@@ -12,22 +10,27 @@ public class Mandelbrot {
 		
 		Generator generator = new Generator();
 		
+		boolean rendered = false;
+		
 		while (true) {
 			switch (gui.getCommand()) {
 			case MandelbrotGUI.RENDER:
 				//Todo render
 				generator.render(gui);
+				rendered = true;
 				break;
-			case MandelbrotGUI.RESET: 
+			case MandelbrotGUI.RESET:
 				gui.resetPlane();
-				generator.render(gui);
+				gui.clearPlane();
+				rendered = false;
 				break;
 			case MandelbrotGUI.QUIT:
-				//TODO
+				System.exit(0);
 				break;
 			case MandelbrotGUI.ZOOM:
-				//TODO zoom;
-				generator.render(gui);
+				if(rendered){
+					generator.render(gui);
+				}
 				break;
 			}
 		}

@@ -4,7 +4,7 @@ import se.lth.cs.ptdc.fractal.MandelbrotGUI;
 
 
 public class Generator {
-	
+
 	private Complex[][] mesh(
 			double minRe, double maxRe,
 			double minIm, double maxIm,
@@ -40,9 +40,9 @@ public class Generator {
 		}
 		
 		Color[][] picture = new Color[gui.getHeight()][gui.getWidth()];
-		Complex origo = new Complex(0, 0);
 		for (int i = 0; i < gui.getHeight(); i++) {
 			for (int j = 0; j < gui.getWidth(); j++) {
+				// TODO generate mandelbrot instead
 				if (complex[i][j].getAbs2()<1){
 					int r = 0;
 					int b = 0;
