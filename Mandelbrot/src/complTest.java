@@ -7,5 +7,7 @@ public class complTest {
 		System.out.println(b.getRe() + " + " + b.getIm());
 		b.mul(a); // b = (1.4 + 1.2i) * (0.4 - 0.8i) = 1.52 - 0.64i
 		System.out.println(b.getRe() + " + " + b.getIm());
+		
+		//kommentar för att testa (kan tas bort när som)
 	}
 }
