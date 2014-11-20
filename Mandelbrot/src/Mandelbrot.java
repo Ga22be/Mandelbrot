@@ -5,17 +5,19 @@ import se.lth.cs.ptdc.fractal.MandelbrotGUI;
 public class Mandelbrot {
 
 	public static void main(String[] args) {
-		// TODO main metoden, skapar objekt och hanterar rendrering
+		
+		//TODO kommentera koden -.-
+		
 		MandelbrotGUI gui = new MandelbrotGUI();
 		
 		Generator generator = new Generator();
 		
 		boolean rendered = false;
 		
+		
 		while (true) {
 			switch (gui.getCommand()) {
 			case MandelbrotGUI.RENDER:
-				//Todo render
 				generator.render(gui);
 				rendered = true;
 				break;
