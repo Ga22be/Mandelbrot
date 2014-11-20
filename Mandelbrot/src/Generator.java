@@ -34,11 +34,14 @@ public class Generator {
 		}
 		pixelWidth = pixelHeight;
 
-		Complex complex[][] = mesh(gui.getMinimumReal() / pixelWidth,
-				gui.getMaximumReal() / pixelWidth, gui.getMinimumImag()
-						/ pixelHeight, gui.getMaximumImag() / pixelHeight,
-				(int) gui.getWidth() / pixelWidth, (int) gui.getHeight()
-						/ pixelHeight);
+		/**
+		 * Anropar mesh för att få en matris med representationer av komplexa
+		 * tal för var enskilld pixel på ritytan.
+		 */
+		Complex complex[][] = mesh(
+				gui.getMinimumReal(), gui.getMaximumReal(), 
+				gui.getMinimumImag(), gui.getMaximumImag(), 
+				gui.getWidth(), gui.getHeight());
 
 		// boolean debug = false;
 		// if (debug){
@@ -52,21 +55,29 @@ public class Generator {
 		// + " == " + gui.getMaximumReal());
 		// }
 
+		int heightSize = getMaxArrayIndex(gui.getHeight(),pixelHeight); 
+		int widthSize = getMaxArrayIndex(gui.getWidth(),pixelHeight);
+		System.out.println(heightSize + ":" + widthSize);
+		
 		/** Generate colorarray from complexarray */
-		Color[][] picture = new Color[gui.getHeight()][gui.getWidth()];
-		for (int i = 0; i < gui.getHeight() / pixelHeight; i += pixelHeight) {
-			for (int j = 0; j < gui.getWidth() / pixelWidth; j += pixelWidth) {
+		Color[][] picture = new Color[heightSize][widthSize];
+		for (int i = 0; i < heightSize; i++) {
+			int jumpY = (pixelHeight/2)+(i*pixelHeight);
+			if(jumpY>=heightSize){jumpY=heightSize-1;}
+			for (int j = 0; j < widthSize; j++) {
 				// TODO generate mandelbrot instead
 				// TODO Color/BW
+				int jumpX = (pixelHeight/2)+(j*pixelHeight);
+				if(jumpX>=widthSize){jumpX=widthSize-1;}
 				
 				// ritar en cirkel
-				if (complex[i][j].getAbs2() < 2) {
+				if (complex[jumpY][jumpX].getAbs2() < 2) {
 					int r = 0;
 					int b = 0;
-					if (complex[i][j].getRe() > 0) {
+					if (complex[jumpY][jumpX].getRe() > 0) {
 						r = 255;
 					}
-					if (complex[i][j].getIm() > 0) {
+					if (complex[jumpY][jumpX].getIm() > 0) {
 						b = 255;
 					}
 					picture[i][j] = new Color(r, 0, b);
@@ -79,11 +90,11 @@ public class Generator {
 		gui.putData(picture, pixelWidth, pixelHeight);
 		gui.enableInput();
 	}
-	
+
 	/** Skapar en matris av komplexa tal som motsvarar pixlarna i ritfÃ¶nstret */
 	private Complex[][] mesh(double minRe, double maxRe, double minIm,
 			double maxIm, int width, int height) {
-		//TODO Ã¤ndra namnet pÃ¥ pixelArray (kanske)
+		// TODO Ã¤ndra namnet pÃ¥ pixelArray (kanske)
 		Complex[][] pixelArray = new Complex[height][width];
 		for (int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
@@ -95,6 +106,24 @@ public class Generator {
 			}
 		}
 		return pixelArray;
+	}
+
+	/**
+	 * Beräknar hur många rader/kolumner du bör skapa i färgmatrisen för en
+	 * viss upplösning
+	 */
+	private int getMaxArrayIndex(int val, int res) {
+		int calc;
+		int diff = val % res;
+		if (diff != 0) {
+			calc = val + (res - diff);
+		} else {
+			calc = val;
+		}
+		calc = calc / res;
+		
+		System.out.println(diff);
+		return calc;
 	}
 
 }
