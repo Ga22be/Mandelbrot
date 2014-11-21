@@ -19,7 +19,7 @@ public class complTest {
 		d.mul(d);
 		System.out.println(d.getRe() + " + " + d.getIm() + "i");
 		
-		//seems to work?
+		//seems to work, maybe?
 		
 	}
 }
