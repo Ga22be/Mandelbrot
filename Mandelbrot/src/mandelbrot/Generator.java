@@ -1,3 +1,4 @@
+package mandelbrot;
 import java.awt.Color;
 
 import se.lth.cs.ptdc.fractal.MandelbrotGUI;
@@ -42,6 +43,7 @@ public class Generator {
 				gui.getMinimumReal(), gui.getMaximumReal(), 
 				gui.getMinimumImag(), gui.getMaximumImag(), 
 				gui.getWidth(), gui.getHeight());
+		System.out.println("done with mesh");
 
 		// boolean debug = false;
 		// if (debug){
@@ -54,40 +56,36 @@ public class Generator {
 		// System.out.println(complex[gui.getHeight()-1][gui.getWidth()-1].getRe()
 		// + " == " + gui.getMaximumReal());
 		// }
-
+		/** Skapar en färgmatris med "rätt" storlek i förhållande till upplösningen */
 		int heightSize = getMaxArrayIndex(gui.getHeight(),pixelHeight); 
 		int widthSize = getMaxArrayIndex(gui.getWidth(),pixelHeight);
-		System.out.println(heightSize + ":" + widthSize);
+		Color[][] picture = new Color[heightSize][widthSize];
+		//System.out.println(heightSize + ":" + widthSize);
+		System.out.println("done with picture[][]");
 		
 		/** Generate colorarray from complexarray */
-		Color[][] picture = new Color[heightSize][widthSize];
-		for (int i = 0; i < heightSize; i++) {
-			int jumpY = (pixelHeight/2)+(i*pixelHeight);
-			if(jumpY>=heightSize){jumpY=heightSize-1;}
-			for (int j = 0; j < widthSize; j++) {
-				// TODO generate mandelbrot instead
-				// TODO Color/BW
-				int jumpX = (pixelHeight/2)+(j*pixelHeight);
-				if(jumpX>=widthSize){jumpX=widthSize-1;}
-				
-				// ritar en cirkel
-				if (complex[jumpY][jumpX].getAbs2() < 2) {
-					int r = 0;
-					int b = 0;
-					if (complex[jumpY][jumpX].getRe() > 0) {
-						r = 255;
-					}
-					if (complex[jumpY][jumpX].getIm() > 0) {
-						b = 255;
-					}
-					picture[i][j] = new Color(r, 0, b);
-				} else {
-					picture[i][j] = new Color(255, 255, 255);
-				}
+		for (int y = 0; y < heightSize; y++) {
+			int jumpY = (pixelHeight/2)+(y*pixelHeight); //y-värdet för punkten i mitten av pixeln i färgmatrisen
+			//Fixar out of bounds exception för höjd
+			if(jumpY >= gui.getHeight()){
+				jumpY = gui.getHeight()-1;
 			}
+			for (int x = 0; x < widthSize; x++) {
+				int jumpX = (pixelWidth/2)+(x*pixelWidth); //x-värdet för punkten i mitten av pixeln i färgmatrisen
+				//Fixar out of bounds exception för bredd
+				if(jumpX >= gui.getWidth()){
+					jumpX = gui.getWidth()-1;
+				}
+
+				picture[y][x] = generateMandelColor(complex[jumpY][jumpX]);
+				
+			}
+			
 		}
+		System.out.println("done with rendering");
 		// TODO extrarutan
 		gui.putData(picture, pixelWidth, pixelHeight);
+		System.out.println("done with putData");
 		gui.enableInput();
 	}
 
@@ -124,6 +122,40 @@ public class Generator {
 		
 		System.out.println(diff);
 		return calc;
+	}
+	/** Bestämmer färgen för en pixel beroende på ett givet komplext tal */
+	private Color generateMandelColor(Complex c) {
+		// TODO generate mandelbrot instead
+		// TODO Color/BW
+		Color color = Color.BLACK;
+		
+		Complex z = new Complex(0, 0);
+		
+		for(int i = 0; i<200; i++){
+			z.mul(z);
+			z.add(c);
+			if(z.getAbs2()>2){
+				// http://flatuicolors.com/#
+				color = Color.WHITE;
+				break;
+			}
+		}
+		
+		/*
+		if (complex.getAbs2() < 2) {
+			int r = 0;
+			int b = 0;
+			if (complex.getRe() > 0) {
+				r = 255;
+			}
+			if (complex.getIm() > 0) {
+				b = 255;
+			}
+			color = new Color(r, 0, b);
+		} else {
+			color = new Color(255, 255, 255);
+		}*/
+		return color;
 	}
 
 }

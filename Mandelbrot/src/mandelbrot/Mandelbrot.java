@@ -1,3 +1,4 @@
+package mandelbrot;
 import se.lth.cs.ptdc.fractal.MandelbrotGUI;
 
 

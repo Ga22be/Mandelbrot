@@ -1,3 +1,6 @@
+package mandelbrot;
+
+
 public class Complex {
 	private double re;
 	private double im;
@@ -20,7 +23,7 @@ public class Complex {
 
 	/** Tar reda på talets absolutbelopp i kvadrat */
 	public double getAbs2(){
-		return Math.pow(re, 2) + Math.pow(im, 2);
+		return re*re + im*im;
 	}
 	
 	/** Adderar det komplexa talet c till detta tal */

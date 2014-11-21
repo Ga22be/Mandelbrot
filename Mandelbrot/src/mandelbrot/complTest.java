@@ -1,3 +1,4 @@
+package mandelbrot;
 
 public class complTest {
 	public static void main(String[] args) {
