@@ -1,6 +1,6 @@
 package test;
 
-public class arraySize {
+public class TestArraySize {
 	public static void main(String[] args) {
 //		int res = 5;
 //		int width = 700;

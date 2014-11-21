@@ -1,6 +1,6 @@
 package test;
 
-public class testPixelJump {
+public class TestPixelJump {
 	public static void main(String[] args) {
 		int res = 9;
 		int jump;

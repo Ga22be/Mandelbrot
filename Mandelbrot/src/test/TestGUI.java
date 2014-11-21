@@ -4,7 +4,7 @@ import java.awt.Color;
 
 import se.lth.cs.ptdc.fractal.MandelbrotGUI;
 
-public class testGUI {
+public class TestGUI {
 	public static void main(String[] args) {
 		MandelbrotGUI gui = new MandelbrotGUI();
 		

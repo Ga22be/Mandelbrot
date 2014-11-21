@@ -2,7 +2,7 @@ package test;
 
 import mandelbrot.Complex;
 
-public class testComplex {
+public class TestComplex {
 
 	public static void main(String[] args) {
 		Complex z = new Complex(0, 0);

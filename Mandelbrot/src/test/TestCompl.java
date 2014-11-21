@@ -1,6 +1,8 @@
-package mandelbrot;
+package test;
 
-public class complTest {
+import mandelbrot.Complex;
+
+public class TestCompl {
 	public static void main(String[] args) {
 		Complex a = new Complex(0.4, -0.8);
 		Complex b = new Complex(1, 2);
