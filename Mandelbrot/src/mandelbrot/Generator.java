@@ -5,28 +5,46 @@ import java.awt.Color;
 import se.lth.cs.ptdc.fractal.MandelbrotGUI;
 
 public class Generator {
-	Color[] colors = new Color[256];
-	int iterations;
+	//alla todos med (fÃ¶rbÃ¤ttring) Ã¤r saker som kan gÃ¶ras men inte Ã¤r jÃ¤ttenÃ¶dvÃ¤ndiga
+	//TODO (fÃ¶rbÃ¤ttring) ta bort onÃ¶diga sysos
+	//TODO KOMMENTARER -.-
+	Color[][] colors = new Color[256][4];
+	int iterations = 200;
+	
+	enum ColorValue{
+		HSB,
+		RED,
+		GREEN,
+		BLUE
+	}
+	ColorValue currentColor = ColorValue.RED;
 
 	public Generator() {
-		// TODO skapa Color[][] picture;
-		// gÃ¥r detta ens nu nÃ¤r vi Ã¤ndrar storlek pÃ¥ den?
-		// svar nej, den ändras var gång vi ändrar resolution alltså kan den
-		// inte skapas direkt
+		//Skapar och fyller color[intensitet][fÃ¤rg]
+		//TODO (fÃ¶rbÃ¤ttring) snyggare fÃ¤rger?
+		for (int i = 0; i<colors.length; i++){
+			colors[i][ColorValue.HSB.ordinal()] = Color.getHSBColor(i/(float)colors.length, 1, 1);
+		}
 		for (int i = 0; i < 256; i++) {
-			colors[i] = new Color(211, i, 0);
+			colors[i][ColorValue.RED.ordinal()] = new Color(211, i, 0);
+		}
+		for (int i = 0; i < 256; i++) {
+			colors[i][ColorValue.GREEN.ordinal()] = new Color(39, 255-i, 96);
+		}
+		for (int i = 0; i < 256; i++) {
+			colors[i][ColorValue.BLUE.ordinal()] = new Color(41, 128, 255-i);
 		}
 	}
 
 	/** Renderar mandelbrot och ritar upp det i MandelbrotGUI */
 	public void render(MandelbrotGUI gui) {
-		// Avaktiverar möjligheterna till input i gui uför att förhindra att en
-		// ändring får renderingen att bugga ur
+		// Avaktiverar mï¿½jligheterna till input i gui ufï¿½r att fï¿½rhindra att en
+		// ï¿½ndring fï¿½r renderingen att bugga ur
 		gui.disableInput();
-
+		/** BÃ–RJAR TOLKA INPUT */
+		// Tolkar input: Vilken upplï¿½sning ï¿½nskas?
 		int pixelWidth;
 		int pixelHeight;
-		// Tolkar input: Vilken upplösning önskas?
 		switch (gui.getResolution()) {
 		case MandelbrotGUI.RESOLUTION_VERY_HIGH:
 			pixelHeight = 1;
@@ -60,33 +78,70 @@ public class Generator {
 		default:
 			blackAndWhite = true;
 		}
-
-		// TODO extrarutan
+		
 		// Tolkar input: (extrarutan)
 		/**
 		 * delar up texten i extrarutan i olika kommandon med olika vÃ¤rden till
-		 * exempel: "-itt 300" -> command itt=300 "-itt 400 -col red" -> command
-		 * itt=400 command col=red (kommandon ges som argument till
+		 * exempel: "iterationer=300" -> command iterationer=300 "-iterationer 400 -color red" -> command
+		 * iterationer=400 command color=red (kommandon ges som argument till
 		 * terminalprogram) programm -in fil.txt -out fil2.txt fast utan
 		 * programm (obviously)
 		 * */
 		String extra = gui.getExtraText();
-		String extras[] = extra.split("-");
+		String extras[] = extra.split(" ");
+		boolean colorChanged = false;
 		for (int i = 0; i < extras.length; i++) {
-			String current[] = extras[i].split(" ");
+			String current[] = extras[i].split("=");
 			if (current.length > 1) {
 				String command = current[0];
 				String value = current[1];
-
-				// System.out.println("Command:" + command + "value" + value);
-				// TODO if command = itt{ itterations = value} etc
+				
+				switch (command){
+				case "iterations":
+				case "iterationer":
+				case "itt":
+					System.out.println("iterations:" + value);
+					iterations = Integer.parseInt(value);
+					break;
+				case "color":
+				case "fÃ¤rg":
+				case "col":
+					colorChanged = true;
+					System.out.println("Ã¤ndrar fÃ¤rg");
+					switch (value){
+					case "red":
+					case "rÃ¶d":
+						currentColor = ColorValue.RED;
+						break;
+					case "green":
+					case "grÃ¶n":
+						currentColor = ColorValue.GREEN;
+						break;
+					case "blue":
+					case "blÃ¥":
+						currentColor = ColorValue.BLUE;
+						break;
+					case "hsb":
+					case "hsv":
+						currentColor = ColorValue.HSB;
+						break;
+					default:
+						System.err.println("Kunde inte tolka fÃ¤rgargumentet: " + value);
+						currentColor = ColorValue.RED;
+					}
+				}
+				
 
 			} else {
-				System.out
-						.println("Texten i extrarutan innehÃ¥ller felaktiga komandon");
+				//TODO (fÃ¶rbÃ¤ttring) ger error nÃ¤r extrarutan Ã¤r tom
+				System.err.println("Kunde inte tolka extrarutan: " + extra);
+			}
+			// Set color to default when not specified in extra
+			if (!colorChanged){
+				currentColor = ColorValue.RED;
 			}
 		}
-		// klar med att tolka input
+		/** KLAR MED ATT TOLKA INPUT */
 
 		/**
 		 * Anropar mesh fï¿½r att fï¿½ en matris med representationer av
@@ -95,20 +150,20 @@ public class Generator {
 		Complex complex[][] = mesh(gui.getMinimumReal(), gui.getMaximumReal(),
 				gui.getMinimumImag(), gui.getMaximumImag(), gui.getWidth(),
 				gui.getHeight());
-		System.out.println("done with mesh");
+		//System.out.println("done with mesh");
 
 		/**
 		 * Skapar en fï¿½rgmatris som representerar pixlarna som ska ritas i
-		 * gui. Pixlarnas storlek sätts i fï¿½rhï¿½llande till upplï¿½sningen.
+		 * gui. Pixlarnas storlek sï¿½tts i fï¿½rhï¿½llande till upplï¿½sningen.
 		 */
 		int heightSize = getMaxArrayIndex(gui.getHeight(), pixelHeight);
 		int widthSize = getMaxArrayIndex(gui.getWidth(), pixelHeight);
 		Color[][] picture = new Color[heightSize][widthSize];
 		// System.out.println(heightSize + ":" + widthSize);
-		System.out.println("done with picture[][]");
+		//System.out.println("done with picture[][]");
 
 		/** Generate colorarray from complexarray */
-		/** Ger var och en av pixlarna i färgmatrisen "picture" en färg */
+		/** Ger var och en av pixlarna i fï¿½rgmatrisen "picture" en fï¿½rg */
 		for (int y = 0; y < heightSize; y++) {
 			// y-vï¿½rdet fï¿½r den komplexa punkten i mitten av pixeln i
 			// fï¿½rgmatrisen
@@ -129,38 +184,38 @@ public class Generator {
 					jumpX = gui.getWidth() - 1;
 				}
 
-				// Ger pixeln picture sin färg beroende på mandelbrotsmängden
+				// Ger pixeln picture sin fï¿½rg beroende pï¿½ mandelbrotsmï¿½ngden
 				picture[y][x] = generateMandelColor(complex[jumpY][jumpX],
 						blackAndWhite);
 			}
 
 		}
-		System.out.println("done with rendering");
-		// Sänder färgmatrisen och dess pixelstorlek till gui för rendering i
-		// fönstret
+		//System.out.println("done with rendering");
+		// Sï¿½nder fï¿½rgmatrisen och dess pixelstorlek till gui fï¿½r rendering i
+		// fï¿½nstret
 		gui.putData(picture, pixelWidth, pixelHeight);
-		System.out.println("done with putData");
+		//System.out.println("done with putData");
 
-		// Återaktiverar input
+		// ï¿½teraktiverar input
 		gui.enableInput();
 	}
+
 
 	/** Skapar en matris av komplexa tal som motsvarar pixlarna i ritfÃ¶nstret */
 	private Complex[][] mesh(double minRe, double maxRe, double minIm,
 			double maxIm, int width, int height) {
-		// TODO Ã¤ndra namnet pÃ¥ pixelArray (kanske)
 		Complex[][] pixelArray = new Complex[height][width];
 		for (int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
-				// Beräkna pixeln i frågas relativa avstånd till vänstra kanten
-				// av fönstret
+				// Berï¿½kna pixeln i frï¿½gas relativa avstï¿½nd till vï¿½nstra kanten
+				// av fï¿½nstret
 				double widthPercent = j / (double) width;
-				// Ger re värdet av: minRe (vilket är vänstra kanten) och
-				// adderar med avståndet mellan minRe och maxRe multiplicerat
-				// med det relativa avståndet till vänstra kanten
+				// Ger re vï¿½rdet av: minRe (vilket ï¿½r vï¿½nstra kanten) och
+				// adderar med avstï¿½ndet mellan minRe och maxRe multiplicerat
+				// med det relativa avstï¿½ndet till vï¿½nstra kanten
 				double re = minRe + widthPercent * (maxRe - minRe);
 
-				// Samma procedur fas för den imaginära delen och höjden
+				// Samma procedur fas fï¿½r den imaginï¿½ra delen och hï¿½jden
 				double heightPercent = i / (double) height;
 				double im = maxIm - heightPercent * (maxIm - minIm);
 				pixelArray[i][j] = new Complex(re, im);
@@ -183,7 +238,7 @@ public class Generator {
 		}
 		calc = calc / res;
 
-		System.out.println(diff);
+		//System.out.println(diff);
 		return calc;
 	}
 
@@ -191,11 +246,11 @@ public class Generator {
 	private Color generateMandelColor(Complex c, boolean blackAndWhite) {
 		Complex z = new Complex(0, 0);
 		Color color = Color.BLACK;
-		iterations = 200;
+		//iterations = 200;
 		int index;
-		double indexStep = iterations / 255.0;
+		double indexStep = iterations / (double)(colors.length-1);
 
-		// Beräknar mandelbrot för givet komplext tal med givet antal
+		// Berï¿½knar mandelbrot fï¿½r givet komplext tal med givet antal
 		// iterationer
 		for (int i = 0; i < iterations; i++) {
 			z.mul(z);
@@ -204,15 +259,16 @@ public class Generator {
 				if (blackAndWhite) {
 					color = Color.WHITE;
 				} else {
-					// Beräknar vilken av färgerna i vektorn "colors" vi vill
-					// använda
+					// Berï¿½knar vilken av fï¿½rgerna i vektorn "colors" vi vill
+					// anvï¿½nda
 					index = (int) Math.round(i / indexStep);
-					// Använder den färgen
-					color = colors[index];
+					// Anvï¿½nder den fï¿½rgen
+					color = colors[index][currentColor.ordinal()];
 				}
 				break;
 			}
 		}
 		return color;
 	}
+
 }

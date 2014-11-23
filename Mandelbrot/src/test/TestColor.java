@@ -36,7 +36,8 @@ public class TestColor {
 		for(int i=0; i<200; i++){
 			for(int j=0; j<100; j++){
 				
-				picture[j][i] = Color.getHSBColor(i/(float)200, 1, 1);
+				//picture[j][i] = Color.getHSBColor(i/(float)200, 1, 1);
+				picture[j][i] = colors[(int)(i/(float)10)];
 			}
 		}
 		gui.putData(picture, 3, 3);
