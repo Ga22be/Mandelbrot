@@ -8,7 +8,7 @@ public class Generator {
 	//alla todos med (förbättring) är saker som kan göras men inte är jättenödvändiga
 	//TODO (förbättring) ta bort onödiga sysos
 	//TODO KOMMENTARER -.-
-	Color[][] colors = new Color[256][4];
+	Color[][] gradients = new Color[256][4];
 	int iterations = 200;
 	
 	enum ColorValue{
@@ -17,22 +17,23 @@ public class Generator {
 		GREEN,
 		BLUE
 	}
-	ColorValue currentColor = ColorValue.RED;
+	ColorValue currentColor;
 
 	public Generator() {
 		//Skapar och fyller color[intensitet][färg]
 		//TODO (förbättring) snyggare färger?
-		for (int i = 0; i<colors.length; i++){
-			colors[i][ColorValue.HSB.ordinal()] = Color.getHSBColor(i/(float)colors.length, 1, 1);
+		currentColor = ColorValue.RED;
+		for (int i = 0; i<gradients.length; i++){
+			gradients[i][ColorValue.HSB.ordinal()] = Color.getHSBColor(i/(float)gradients.length, 1, 1);
 		}
 		for (int i = 0; i < 256; i++) {
-			colors[i][ColorValue.RED.ordinal()] = new Color(211, i, 0);
+			gradients[i][ColorValue.RED.ordinal()] = new Color(211, i, 0);
 		}
 		for (int i = 0; i < 256; i++) {
-			colors[i][ColorValue.GREEN.ordinal()] = new Color(39, 255-i, 96);
+			gradients[i][ColorValue.GREEN.ordinal()] = new Color(39, 255-i, 96);
 		}
 		for (int i = 0; i < 256; i++) {
-			colors[i][ColorValue.BLUE.ordinal()] = new Color(41, 128, 255-i);
+			gradients[i][ColorValue.BLUE.ordinal()] = new Color(46, (int)(204/(double)255*i), 113);
 		}
 	}
 
@@ -42,7 +43,7 @@ public class Generator {
 		// �ndring f�r renderingen att bugga ur
 		gui.disableInput();
 		/** BÖRJAR TOLKA INPUT */
-		// Tolkar input: Vilken uppl�sning �nskas?
+		// Tolkar input: Vilken upplösning �nskas?
 		int pixelWidth;
 		int pixelHeight;
 		switch (gui.getResolution()) {
@@ -82,14 +83,14 @@ public class Generator {
 		// Tolkar input: (extrarutan)
 		/**
 		 * delar up texten i extrarutan i olika kommandon med olika värden till
-		 * exempel: "iterationer=300" -> command iterationer=300 "-iterationer 400 -color red" -> command
-		 * iterationer=400 command color=red (kommandon ges som argument till
-		 * terminalprogram) programm -in fil.txt -out fil2.txt fast utan
-		 * programm (obviously)
+		 * exempel: 
+		 * "iterationer=300"
+		 * "iterationer=400 color=red"
 		 * */
 		String extra = gui.getExtraText();
 		String extras[] = extra.split(" ");
 		boolean colorChanged = false;
+		boolean iterationsChanged = false;
 		for (int i = 0; i < extras.length; i++) {
 			String current[] = extras[i].split("=");
 			if (current.length > 1) {
@@ -100,14 +101,13 @@ public class Generator {
 				case "iterations":
 				case "iterationer":
 				case "itt":
-					System.out.println("iterations:" + value);
 					iterations = Integer.parseInt(value);
+					iterationsChanged = true;
 					break;
 				case "color":
 				case "färg":
 				case "col":
 					colorChanged = true;
-					System.out.println("ändrar färg");
 					switch (value){
 					case "red":
 					case "röd":
@@ -129,16 +129,21 @@ public class Generator {
 						System.err.println("Kunde inte tolka färgargumentet: " + value);
 						currentColor = ColorValue.RED;
 					}
+					break;
+				default:
+					System.err.println("Kunde inte tolka kommandot: " + command);
 				}
-				
-
-			} else {
-				//TODO (förbättring) ger error när extrarutan är tom
-				System.err.println("Kunde inte tolka extrarutan: " + extra);
+			}
+			else if(!extra.isEmpty()){
+				System.err.println("Kunde inte tolka extrarutan:" + extra);
 			}
 			// Set color to default when not specified in extra
 			if (!colorChanged){
 				currentColor = ColorValue.RED;
+			}
+			// Set iterations to default when not specified in extra
+			if (!iterationsChanged){
+				iterations = 200;
 			}
 		}
 		/** KLAR MED ATT TOLKA INPUT */
@@ -150,7 +155,6 @@ public class Generator {
 		Complex complex[][] = mesh(gui.getMinimumReal(), gui.getMaximumReal(),
 				gui.getMinimumImag(), gui.getMaximumImag(), gui.getWidth(),
 				gui.getHeight());
-		//System.out.println("done with mesh");
 
 		/**
 		 * Skapar en f�rgmatris som representerar pixlarna som ska ritas i
@@ -159,8 +163,6 @@ public class Generator {
 		int heightSize = getMaxArrayIndex(gui.getHeight(), pixelHeight);
 		int widthSize = getMaxArrayIndex(gui.getWidth(), pixelHeight);
 		Color[][] picture = new Color[heightSize][widthSize];
-		// System.out.println(heightSize + ":" + widthSize);
-		//System.out.println("done with picture[][]");
 
 		/** Generate colorarray from complexarray */
 		/** Ger var och en av pixlarna i f�rgmatrisen "picture" en f�rg */
@@ -190,11 +192,9 @@ public class Generator {
 			}
 
 		}
-		//System.out.println("done with rendering");
 		// S�nder f�rgmatrisen och dess pixelstorlek till gui f�r rendering i
 		// f�nstret
 		gui.putData(picture, pixelWidth, pixelHeight);
-		//System.out.println("done with putData");
 
 		// �teraktiverar input
 		gui.enableInput();
@@ -228,17 +228,16 @@ public class Generator {
 	 * Ber�knar hur m�nga rader/kolumner du b�r skapa i f�rgmatrisen
 	 * f�r en viss uppl�sning
 	 */
-	private int getMaxArrayIndex(int val, int res) {
+	private int getMaxArrayIndex(int distance, int res) {
 		int calc;
-		int diff = val % res;
+		int diff = distance % res;
 		if (diff != 0) {
-			calc = val + (res - diff);
+			calc = distance + (res - diff);
 		} else {
-			calc = val;
+			calc = distance;
 		}
 		calc = calc / res;
 
-		//System.out.println(diff);
 		return calc;
 	}
 
@@ -246,9 +245,8 @@ public class Generator {
 	private Color generateMandelColor(Complex c, boolean blackAndWhite) {
 		Complex z = new Complex(0, 0);
 		Color color = Color.BLACK;
-		//iterations = 200;
 		int index;
-		double indexStep = iterations / (double)(colors.length-1);
+		double indexStep = iterations / (double)(gradients.length-1);
 
 		// Ber�knar mandelbrot f�r givet komplext tal med givet antal
 		// iterationer
@@ -263,7 +261,7 @@ public class Generator {
 					// anv�nda
 					index = (int) Math.round(i / indexStep);
 					// Anv�nder den f�rgen
-					color = colors[index][currentColor.ordinal()];
+					color = gradients[index][currentColor.ordinal()];
 				}
 				break;
 			}
