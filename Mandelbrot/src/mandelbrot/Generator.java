@@ -164,7 +164,6 @@ public class Generator {
 		int widthSize = getMaxArrayIndex(gui.getWidth(), pixelHeight);
 		Color[][] picture = new Color[heightSize][widthSize];
 
-		/** Generate colorarray from complexarray */
 		/** Ger var och en av pixlarna i f�rgmatrisen "picture" en f�rg */
 		for (int y = 0; y < heightSize; y++) {
 			// y-v�rdet f�r den komplexa punkten i mitten av pixeln i
